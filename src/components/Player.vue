@@ -8,10 +8,12 @@
         v-bind:hide="card.hide">
       </card>
     </transition-group>
+    <transition>
     <div class="flex" v-show="showButtons">
       <button v-on:click="hit">Hit</button>
       <button v-on:click="stand">Stand</button>
     </div>
+    </transition>
   </div>
 </template>
 
@@ -74,6 +76,15 @@ export default class Player extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: 0.5s;
+}
+.v-enter,
+.v-leave-to {
+  opacity: 0;
+}
+
 .flip-enter-active,
 .flip-leave-active {
   transition: 0.5s;

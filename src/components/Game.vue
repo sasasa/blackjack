@@ -5,9 +5,11 @@
       {{ mainMessage }}
     </div>
     <Player v-on:stand="stand" v-bind:showButtons="showButtons" />
-    <div class="message result">
-      {{ resultMessage }}
-    </div>
+    <transition>
+      <div v-if="resultMessage !== ''" class="message result">
+        {{ resultMessage }}
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -55,6 +57,14 @@ export default class Game extends Vue {
 </script>
 
 <style lang="scss" scoped>
+.v-enter-active,
+.v-leave-active {
+  transition: 1s;
+}
+.v-enter,
+.v-leave-to {
+  opacity: 0;
+}
 .game {
   display: flex;
   flex-direction: column;
