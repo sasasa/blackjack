@@ -1,6 +1,6 @@
 <template>
   <div class="game">
-    <Dealer ref="dealer" v-on:result="postexec" />
+    <Dealer v-bind:playersResult="playersResult" v-on:result="postexec" />
     <div class="message">
       {{ mainMessage }}
     </div>
@@ -15,8 +15,10 @@
 
 <script lang="ts">
 import { Component, Vue } from 'vue-property-decorator';
-import Dealer from './Dealer.vue'
-import Player from './Player.vue'
+import Dealer from './Dealer.vue';
+import Player from './Player.vue';
+import { CardResult } from '../utils/type.d';
+import { BUST } from '../utils/define';
 
 @Component({
   components: {
@@ -25,32 +27,32 @@ import Player from './Player.vue'
   },
 })
 export default class Game extends Vue {
-  private mainMessage = 'Welcome to Black Jack'
-  private playersResult: number|string = 0
-  private dealersResult: number|string = 0
-  private showButtons = true
+  private mainMessage = 'Welcome to Black Jack';
+  private playersResult: CardResult = 0;
+  private dealersResult: CardResult = 0;
+  private showButtons = true;
 
-  private stand (playersResult: number|string) {
+  // バーストした時もしくはstandしたときに呼ばれる
+  private stand(playersResult: CardResult) {
     this.playersResult = playersResult;
-    this.showButtons = false
-    this.$refs.dealer.$emit('dealer-turn', playersResult === 'Bust')
+    this.showButtons = false;
   }
-  private postexec (dealersResult: number|string) {
-    this.dealersResult = dealersResult
-    this.mainMessage = `Dealer : ${dealersResult} / Player : ${this.playersResult}`
+  private postexec(dealersResult: CardResult) {
+    this.dealersResult = dealersResult;
+    this.mainMessage = `Dealer : ${dealersResult} / Player : ${this.playersResult}`;
   }
 
-  get resultMessage () {
+  get resultMessage() {
     if (this.showButtons) {
-      return ''
+      return '';
     }
-    if (this.playersResult > this.dealersResult || this.dealersResult === 'Bust') {
-      return 'You Win'
+    if (this.playersResult > this.dealersResult || this.dealersResult === BUST) {
+      return 'You Win';
     }
-    if (this.playersResult < this.dealersResult || this.playersResult === 'Bust') {
-      return 'You Lose'
+    if (this.playersResult < this.dealersResult || this.playersResult === BUST) {
+      return 'You Lose';
     }
-    return 'Draw'
+    return 'Draw';
   }
 }
 

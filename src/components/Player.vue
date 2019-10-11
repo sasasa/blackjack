@@ -4,7 +4,7 @@
       <card v-for="(card, index) in hand"
         v-bind:key="index" 
         v-bind:suit="card.suit" 
-        v-bind:number="card.number" 
+        v-bind:num="card.num" 
         v-bind:hide="card.hide">
       </card>
     </transition-group>
@@ -20,10 +20,11 @@
 
 <script lang="ts">
 import { Component, Prop, Emit, Watch, Vue } from 'vue-property-decorator';
-import { CardType } from '../utils/type.d'
-import pick from '../utils/deck'
-import calc from '../utils/calc'
-import Card from './Card.vue'
+import { CardType, CardResult } from '../utils/type.d';
+import { BUST } from '../utils/define';
+import pick from '../utils/deck';
+import calc from '../utils/calc';
+import Card from './Card.vue';
 
 @Component({
   components: {
@@ -33,43 +34,46 @@ import Card from './Card.vue'
 export default class Player extends Vue {
   @Prop()
   private showButtons!: boolean;
-  private hand: CardType[] = []
-  private result: number | string = 0
-  
-  private created () {
-    this.hand.push(pick())
+  private hand: CardType[] = [];
+  private result: CardResult = 0;
+  private created() {
+    this.hand.push(pick());
     this.hand[0].hide = true;
-    this.hand.push(pick())
+    this.hand.push(pick());
     this.hand[1].hide = true;
     setTimeout(() => {
-      const card = this.hand.shift()
+      const card = this.hand.shift();
       setTimeout(() => {
-        this.hand.unshift(card)
-        card.hide = false;
-      }, 300)
-    }, 300)
+        if (card) {
+          card.hide = false;
+          this.hand.unshift(card);
+        }
+      }, 300);
+    }, 300);
     setTimeout(() => {
-      const card = this.hand.pop()
+      const card = this.hand.pop();
       setTimeout(() => {
-        this.hand.push(card)
-        card.hide = false;
-      }, 300)
-    }, 300)
+        if (card) {
+          card.hide = false;
+          this.hand.push(card);
+        }
+      }, 300);
+    }, 300);
     this.result = calc(this.hand);
   }
-  private hit () {
+  private hit() {
     this.hand.push(pick());
     this.result = calc(this.hand);
   }
   @Emit('stand')
-  private stand () {
-    return this.result
+  private stand(): CardResult {
+    return this.result;
   }
 
   @Watch('result')
-  private monitoringResult (newValue: number | string, oldValue: number | string) {
-    if (newValue === 'Bust') {
-      this.$emit('stand', newValue)
+  private monitoringResult(newValue: CardResult, oldValue: CardResult) {
+    if (newValue === BUST) {
+      this.$emit('stand', newValue);
     }
   }
 }

@@ -4,7 +4,7 @@
       <Card v-for="(card, index) in hand"
         v-bind:key="index"
         v-bind:suit="card.suit"
-        v-bind:number="card.number"
+        v-bind:num="card.num"
         v-bind:hide="card.hide">
       </Card>
     </transition-group>
@@ -12,12 +12,13 @@
 </template>
 
 <script lang="ts">
-import { Component, Emit, Vue } from 'vue-property-decorator';
+import { Component, Emit, Watch, Prop, Vue } from 'vue-property-decorator';
 
-import { CardType } from '../utils/type.d'
-import pick from '../utils/deck'
-import calc from '../utils/calc'
-import Card from './Card.vue'
+import { CardType, CardResult } from '../utils/type.d';
+import { BUST } from '../utils/define';
+import pick from '../utils/deck';
+import calc from '../utils/calc';
+import Card from './Card.vue';
 
 @Component({
   components: {
@@ -25,42 +26,54 @@ import Card from './Card.vue'
   },
 })
 export default class Dealer extends Vue {
-  private hand: CardType[] = []
-  
-  private created () {
+  private hand: CardType[] = [];
+
+  @Prop()
+  private playersResult!: CardResult;
+
+  private created() {
     this.hand.push(pick());
     this.hand[0].hide = true;
     this.hand.push(pick());
     this.hand[1].hide = true;
 
     setTimeout(() => {
-      const card = this.hand.pop()
+      const card = this.hand.pop();
       setTimeout(() => {
-        this.hand.push(card)
-        card.hide = false;
-      }, 300)
-    }, 300)
+        if (card) {
+          card.hide = false;
+          this.hand.push(card);
+        }
+      }, 300);
+    }, 300);
     // dealer-turnイベントを待ち受けてthis.dealerTurnを実行
-    this.$on('dealer-turn', this.dealerTurn)
+    // this.$on('dealer-turn', this.dealerTurn);
+  }
+
+  @Watch('playersResult')
+  private dealer() {
+    this.dealerTurn (this.playersResult === BUST);
   }
 
   @Emit('result')
-  private dealerTurn (playerBust: boolean) {
+  private dealerTurn(playerBust: boolean): CardResult {
     this.hand[0].hide = false;
 
     while (!playerBust && calc(this.hand) < 17) {
-      this.hand.push(pick())
+      this.hand.push(pick());
       this.hand[this.hand.length - 1].hide = true;
 
       setTimeout(() => {
-        const card = this.hand.pop()
+        const card = this.hand.pop();
         setTimeout(() => {
-          this.hand.push(card)
-          card.hide = false;
-        }, 300)
-      }, 300)
+          if (card) {
+            card.hide = false;
+            this.hand.push(card);
+          }
+        }, 300);
+      }, 300);
     }
-    return calc(this.hand)
+    return calc(this.hand);
   }
 }
 </script>
