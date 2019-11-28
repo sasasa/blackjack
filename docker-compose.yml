@@ -1,0 +1,11 @@
+version: '3'
+services:
+  front:
+    build: .
+    tty: true
+    stdin_open: true
+    command: yarn serve
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
